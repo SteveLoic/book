@@ -6,8 +6,8 @@ on:
     branches:
       - main
       - feature
-  env:
-    USERNAME_GITHUB_IMAGE: steve
+env:
+  USERNAME_GITHUB_IMAGE: steve
 jobs:
   unit-testing:
     container:
