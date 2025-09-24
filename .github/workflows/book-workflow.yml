@@ -11,7 +11,7 @@ env:
 jobs:
   unit-testing:
     container:
-      image: maven:3.9.3-eclipse-temurin-17
+      image: maven:3.9.3-openjdk-17
     services:
       postgres-db:
         image: postgres:14-alpine
