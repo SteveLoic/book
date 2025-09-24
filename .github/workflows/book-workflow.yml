@@ -81,7 +81,7 @@ jobs:
           -e SPRING_DATASOURCE_USERNAME=${{ vars.POSTGRES_USER }} \
           -e SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
           -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${{ vars.POSTGRES_DB }} \
-          ${{ vars.USERNAME_GITHUB_IMAGE }}/book:v${{ github.run_number } 
+          ${{vars.USERNAME_GITHUB_IMAGE}}/book:v${{ github.run_number } 
           
           docker ps 
           docker logs book-backend-app
