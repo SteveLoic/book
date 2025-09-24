@@ -40,9 +40,51 @@ jobs:
       - unit-testing
       - test-coverage
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{vars.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{vars.POSTGRES_DB}}
     steps:
-      - name: docker
-        run: echo docker the app
+      - name: Checkout Repository
+        run: uses actions/checkout@v5
+
+      - name: Login to DockerHub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{vars.DOCKER_HUB_USERNAME}}
+          password: ${{secrets.DOCKER_HUB_PASSWORD}}
+
+      - name: Login to GitHUB
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          password: ${{github.repository_owner}}
+          username: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Docker build for testing
+        uses: docker/build-push-action@v6
+        with:
+          push: 'false'
+          context: .
+          tags: ${{USERNAME_GITHUB_IMAGE}}/book:v${{github.run_number}}
+
+      - name: Docker Image test
+        run: |
+          docker images
+          docker run --name book-backend-app -d \
+          -p 5051:5051 \
+          -e SPRING_DATASOURCE_USERNAME=${{ vars.POSTGRES_USER }} \
+          -e SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+          -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${{ vars.POSTGRES_DB }} \
+          ${{ env.USERNAME_GITHUB_IMAGE }}/book:v${{ github.run_number } 
+          
+          docker ps 
+          docker logs book-backend-app
   dev-deploy:
     needs: docker-containerization
     runs-on: ubuntu-latest
