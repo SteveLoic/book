@@ -9,9 +9,20 @@ on:
 env:
   USERNAME_GITHUB_IMAGE: steve
 jobs:
+  docker-login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker-login
+        uses: docker/login-action@v3
+        with:
+          username: ${{vars.DOCKER_HUB_USERNAME}}
+          password: ${{secrets.DOCKER_HUB_PASSWORD}}
+      - name: Pre-pull Maven image
+        run: docker pull maven:3.9.3-eclipse-temurin-17
+
   unit-testing:
     container:
-      image: maven:3.9.3-openjdk-17
+      image: maven:3.9.3-eclipse-temurin-17
     services:
       postgres-db:
         image: postgres:14-alpine
