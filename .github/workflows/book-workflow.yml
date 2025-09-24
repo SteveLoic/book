@@ -21,6 +21,7 @@ jobs:
         run: docker pull maven:3.9.3-eclipse-temurin-17
 
   unit-testing:
+    needs: docker-login
     container:
       image: maven:3.9.3-eclipse-temurin-17
     services:
