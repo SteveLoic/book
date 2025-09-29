@@ -5,13 +5,12 @@ on:
   pull_request:
     branches:
       - main
-
+      - develop
   push:
     branches:
-      - develop
-      - feature
+      - features/**
 env:
-  USERNAME_GITHUB_IMAGE: steve
+  APPLICATION_NAME: "book-api"
 jobs:
   unit-testing:
     container:
@@ -77,7 +76,7 @@ jobs:
         with:
           push: 'false'
           context: .
-          tags: ${{env.USERNAME_GITHUB_IMAGE}}/book:v${{github.run_number}}
+          tags: ${{env.APPLICATION_NAME}}/book:v${{github.run_number}}
 
       - name: Docker Image test
         run: |
@@ -87,7 +86,7 @@ jobs:
           -e SPRING_DATASOURCE_USERNAME=${{ vars.POSTGRES_USER }} \
           -e SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
           -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${{ vars.POSTGRES_DB }} \
-          ${{env.USERNAME_GITHUB_IMAGE}}/book:v${{ github.run_number }}
+          ${{env.APPLICATION_NAME}}/book:v${{ github.run_number }}
           
           docker ps  
           docker logs book-backend-app
