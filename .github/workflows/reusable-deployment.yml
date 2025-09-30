@@ -15,10 +15,6 @@ on:
         type: string
         required: true
 
-    outputs:
-      db_host:
-        value: postgres-db
-
     secrets:
       postgres_password:
         required: true
@@ -42,6 +38,11 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+    outputs:
+      db_host: postgres-db
+    steps:
+      - name: Dummy Step
+        run: echo "Postgres Service läuft und Job parst korrekt"
 
 #    env:
 #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{inputs.postgres_db}}
