@@ -15,35 +15,34 @@ env:
   POSTGRES_DB: ${{vars.POSTGRES_DB}}
   DB_HOST: postgres-db
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    services:
-      postgres-db:
-        image: postgres:14-alpine
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: ${{vars.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-          POSTGRES_DB: ${{vars.POSTGRES_DB}}
-        options: >-
-          --health-cmd="pg_isready -U ${{ vars.POSTGRES_USER}}}"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-    steps:
-      - name: Database
-        run: echo Database "Postgres Service läuft und Job parst korrekt"
+#  setup:
+#    runs-on: ubuntu-latest
+#    services:
+#      postgres-db:
+#        image: postgres:14-alpine
+#        ports:
+#          - 5432:5432
+#        env:
+#          POSTGRES_USER: ${{vars.POSTGRES_USER}}
+#          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+#          POSTGRES_DB: ${{vars.POSTGRES_DB}}
+#        options: >-
+#          --health-cmd="pg_isready -U ${{ vars.POSTGRES_USER}}}"
+#          --health-interval=10s
+#          --health-timeout=5s
+#          --health-retries=5
+#    steps:
+#      - name: Database
+#        run: echo Database "Postgres Service läuft und Job parst korrekt"
 
   unit-testing:
     runs-on: ubuntu-latest
-    needs: setup
     container:
       image: maven:3.9.3-eclipse-temurin-17
-    env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
-      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
-      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+#    env:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
+#      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
+#      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -53,17 +52,16 @@ jobs:
 
   test-coverage:
     runs-on: ubuntu-latest
-    needs: setup
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
-      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
-      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
+#      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
+#      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
 
     steps:
       - name: Checkout Repository
-        run: actions/checkout@v5
+        uses: actions/checkout@v5
 
       - name: Test coverage with Jacoco
         run: mvn clean verify
