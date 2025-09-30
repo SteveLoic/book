@@ -28,7 +28,7 @@ jobs:
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{env.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
     steps:
