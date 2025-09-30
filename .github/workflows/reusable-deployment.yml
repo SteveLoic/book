@@ -22,8 +22,9 @@ on:
     secrets:
       postgres_password:
         required: true
-
-
+    steps:
+      - name: Dummy Step
+        run: echo "Postgres Service läuft und Job parst korrekt"
 jobs:
   container:
     runs-on: ubuntu-latest
@@ -41,6 +42,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+
 #    env:
 #      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{inputs.postgres_db}}
 #      SPRING_DATASOURCE_USERNAME: ${{inputs.postgres_user}}
