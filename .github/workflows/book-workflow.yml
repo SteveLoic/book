@@ -41,7 +41,7 @@ jobs:
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${{env.DB_HOST}}:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
     steps:
@@ -57,7 +57,7 @@ jobs:
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${{env.DB_HOST}}:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
 
@@ -84,7 +84,7 @@ jobs:
           POSTGRES_DB: ${{vars.POSTGRES_DB}}
     steps:
       - name: Checkout Repository
-        run: uses actions/checkout@v5
+        uses: actions/checkout@v5
 
       - name: Login to DockerHub Login
         uses: docker/login-action@v3
