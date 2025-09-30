@@ -17,8 +17,8 @@ jobs:
   setup:
     uses: ./.github/workflows/reusable-deployment.yml
     with:
-      postgres_db: ${{env.POSTGRES_DB}}
-      postgres_user:  ${{env.POSTGRES_USER}}
+      postgres_db: ${{vars.POSTGRES_DB}}
+      postgres_user:  ${{vars.POSTGRES_USER}}
     secrets:
       postgres_password: ${{secrets.POSTGRES_PASSWORD}}
 
