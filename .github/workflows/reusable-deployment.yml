@@ -18,9 +18,6 @@ on:
     secrets:
       postgres_password:
         required: true
-    steps:
-      - name: Dummy Step
-        run: echo "Postgres Service läuft und Job parst korrekt"
 jobs:
   container:
     runs-on: ubuntu-latest
