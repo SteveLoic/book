@@ -13,14 +13,27 @@ env:
   APPLICATION_NAME: "book-api"
   POSTGRES_USER: ${{vars.POSTGRES_USER}}
   POSTGRES_DB: ${{vars.POSTGRES_DB}}
+  DB_HOST: postgres-db
 jobs:
   setup:
-    uses: ./.github/workflows/reusable-deployment.yml
-    with:
-      postgres_db: ${{vars.POSTGRES_DB}}
-      postgres_user:  ${{vars.POSTGRES_USER}}
-    secrets:
-      postgres_password: ${{secrets.POSTGRES_PASSWORD}}
+    runs-on: ubuntu-latest
+    services:
+      postgres-db:
+        image: postgres:14-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{vars.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{vars.POSTGRES_DB}}
+        options: >-
+          --health-cmd="pg_isready -U ${{ vars.POSTGRES_USER}}}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Database
+        run: echo Database "Postgres Service läuft und Job parst korrekt"
 
   unit-testing:
     runs-on: ubuntu-latest
@@ -28,7 +41,7 @@ jobs:
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${{env.DB_HOST}}:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
     steps:
@@ -37,11 +50,24 @@ jobs:
 
       - name: Build and Test
         run: mvn clean test
+
   test-coverage:
     runs-on: ubuntu-latest
+    needs: setup
+    container:
+      image: maven:3.9.3-eclipse-temurin-17
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${{env.DB_HOST}}:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
+      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+
     steps:
-      - name: test-coverage
-        run: echo test-coverage
+      - name: Checkout Repository
+        run: actions/checkout@v5
+
+      - name: Test coverage with Jacoco
+        run: mvn clean verify
+
   docker-containerization:
     needs:
       - unit-testing
@@ -92,6 +118,7 @@ jobs:
           
           docker ps  
           docker logs book-backend-app
+
   dev-deploy:
     needs: docker-containerization
     runs-on: ubuntu-latest

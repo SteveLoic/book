@@ -38,7 +38,7 @@ jobs:
     outputs:
       db_host: postgres-db
     steps:
-      - name: Dummy Step
+      - name: Database lauft
         run: echo "Postgres Service läuft und Job parst korrekt"
 
 #    env:
