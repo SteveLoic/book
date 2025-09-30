@@ -49,16 +49,22 @@ jobs:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
           POSTGRES_DB: ${{vars.POSTGRES_DB}}
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
       - name: Test coverage with Jacoco
         run: mvn clean verify
+
+      - name: Archive Test Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: Code-Coverage-Result
+          path: target/site/jacoco
+          retention-days: 5
 
   docker-containerization:
     needs:
