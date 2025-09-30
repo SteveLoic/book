@@ -11,12 +11,14 @@ on:
       - features/**
 env:
   APPLICATION_NAME: "book-api"
+  POSTGRES_USER: ${{vars.POSTGRES_USER}}
+  POSTGRES_DB: ${{vars.POSTGRES_DB}}
 jobs:
   setup:
     uses: ./.github/workflows/reusable-deployment.yml
     with:
-      postgres_db: ${{vars.POSTGRES_DB}}
-      postgres_user:  ${{vars.POSTGRES_USER}}
+      postgres_db: ${{env.POSTGRES_DB}}
+      postgres_user:  ${{env.POSTGRES_USER}}
     secrets:
       postgres_password: ${{secrets.POSTGRES_PASSWORD}}
 
@@ -26,7 +28,7 @@ jobs:
     container:
       image: maven:3.9.3-eclipse-temurin-17
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{env.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
     steps:
