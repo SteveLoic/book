@@ -12,23 +12,23 @@ on:
 env:
   APPLICATION_NAME: "book-api"
 jobs:
+  setup:
+    uses: ./.github/workflows/reusable-deployment.yml
+    with:
+      postgres_db: ${{vars.POSTGRES_DB}}
+      postgres_user:  ${{vars.POSTGRES_USER}}
+    secrets:
+      postgres_password: ${{secrets.POSTGRES_PASSWORD}}
+
   unit-testing:
+    runs-on: ubuntu-latest
+    needs: setup
     container:
       image: maven:3.9.3-eclipse-temurin-17
-    services:
-      postgres-db:
-        image: postgres:14-alpine
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: ${{vars.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-          POSTGRES_DB: ${{vars.POSTGRES_DB}}
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${{needs.setup.outputs.db_host}}:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5

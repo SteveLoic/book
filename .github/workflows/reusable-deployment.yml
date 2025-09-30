@@ -1,0 +1,45 @@
+name: reusable deployment book
+on:
+  workflow_call:
+    inputs:
+      postgres_image:
+        type: string
+        required: false
+        default: postgres:14-alpine
+      postgres_user:
+        type: string
+        description: Provide the username for db
+        required: true
+      postgres_db:
+        description: Provide the postgres db
+        type: string
+        required: true
+    outputs:
+      db_host: postgres-db
+
+    secrets:
+      postgres_password:
+        required: true
+
+
+jobs:
+  container:
+    runs-on: ubuntu-latest
+    services:
+      postgres-db:
+        image: ${{inputs.postgres_image}}
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{inputs.postgres_user}}
+          POSTGRES_PASSWORD: ${{secrets.postgres_password}}
+          POSTGRES_DB: ${{inputs.postgres_db}}
+        options: >-
+          --health-cmd="pg_isready -U ${{ inputs.postgres_user}}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+#    env:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{inputs.postgres_db}}
+#      SPRING_DATASOURCE_USERNAME: ${{inputs.postgres_user}}
+#      SPRING_DATASOURCE_PASSWORD: ${{secrets.postgres_password}}
