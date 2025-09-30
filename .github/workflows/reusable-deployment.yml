@@ -14,8 +14,10 @@ on:
         description: Provide the postgres db
         type: string
         required: true
+
     outputs:
-      db_host: postgres-db
+      db_host:
+        value: postgres-db
 
     secrets:
       postgres_password:
