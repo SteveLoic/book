@@ -22,9 +22,8 @@ public class BookRequest {
     @NotNull(message ="description must be not null")
     private String author;
 
-    @NotBlank(message = "isbn must be not empty")
     @NotNull(message ="description must be not null")
-    private String isbn;
+    private int isbn;
 
     @NotBlank(message = "description must be not empty")
     @NotNull(message ="description must be not null")

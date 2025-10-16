@@ -5,17 +5,40 @@ on:
   pull_request:
     branches:
       - main
-
+      - develop
   push:
     branches:
-      - develop
-      - feature
+      - features/**
 env:
-  USERNAME_GITHUB_IMAGE: steve
+  APPLICATION_NAME: "book-api"
+
 jobs:
   unit-testing:
-    container:
-      image: maven:3.9.3-eclipse-temurin-17
+    runs-on: ubuntu-latest
+    services:
+      postgres-db:
+        image: postgres:14-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{vars.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{vars.POSTGRES_DB}}
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
+      SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+      SPRING_TEST_DATABASE_REPLACE: NONE
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Build and Test
+        run: mvn clean test
+
+  test-coverage:
+    runs-on: ubuntu-latest
     services:
       postgres-db:
         image: postgres:14-alpine
@@ -26,21 +49,23 @@ jobs:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
           POSTGRES_DB: ${{vars.POSTGRES_DB}}
     env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${{vars.POSTGRES_DB}}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{vars.POSTGRES_DB}}
       SPRING_DATASOURCE_USERNAME: ${{vars.POSTGRES_USER}}
       SPRING_DATASOURCE_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Build and Test
-        run: mvn clean test
-  test-coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - name: test-coverage
-        run: echo test-coverage
+      - name: Test coverage with Jacoco
+        run: mvn clean verify
+
+      - name: Archive Test Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: Code-Coverage-Result
+          path: target/site/jacoco
+          retention-days: 5
+
   docker-containerization:
     needs:
       - unit-testing
@@ -57,7 +82,7 @@ jobs:
           POSTGRES_DB: ${{vars.POSTGRES_DB}}
     steps:
       - name: Checkout Repository
-        run: uses actions/checkout@v5
+        uses: actions/checkout@v5
 
       - name: Login to DockerHub Login
         uses: docker/login-action@v3
@@ -69,28 +94,28 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          password: ${{github.repository_owner}}
-          username: ${{secrets.GITHUB_TOKEN}}
+          password: ${{secrets.GITHUB_TOKEN}}
+          username: ${{github.actor}}
 
       - name: Docker build for testing
         uses: docker/build-push-action@v6
         with:
           push: 'false'
           context: .
-          tags: ${{env.USERNAME_GITHUB_IMAGE}}/book:v${{github.run_number}}
+          tags: ${{env.APPLICATION_NAME}}/book:v${{github.run_number}}
 
       - name: Docker Image test
         run: |
-          docker images
+          docker images -a
           docker run --name book-backend-app -d \
           -p 5051:5051 \
           -e SPRING_DATASOURCE_USERNAME=${{ vars.POSTGRES_USER }} \
           -e SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
           -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${{ vars.POSTGRES_DB }} \
-          ${{env.USERNAME_GITHUB_IMAGE}}/book:v${{ github.run_number }}
-          
+          ${{env.APPLICATION_NAME}}/book:v${{ github.run_number }}
           docker ps  
           docker logs book-backend-app
+
   dev-deploy:
     needs: docker-containerization
     runs-on: ubuntu-latest
